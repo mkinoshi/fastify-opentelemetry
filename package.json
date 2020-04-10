@@ -1,0 +1,31 @@
+{
+  "name": "fastify-opentelemetry",
+  "version": "1.0.0",
+  "description": "OpenTelemetry fastify automatic instrumentation package.",
+  "main": "index.js",
+  "repository": "https://github.com/mkinoshi/fastify-opentelemetry",
+  "scripts": {
+    "test": "tap --cov 'test/**/*.js'",
+    "lint": "standard",
+    "version:update": "node ./scripts/version-update.js"
+  },
+  "author": "Makoto Kinoshita <mkinoshi12@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^0.6.0",
+    "fastify-plugin": "^1.6.1"
+  },
+  "devDependencies": {
+    "@opentelemetry/exporter-zipkin": "^0.6.1",
+    "@opentelemetry/node": "^0.6.1",
+    "@opentelemetry/tracing": "^0.6.1",
+    "fastify": "^2.13.0",
+    "request": "^2.88.2",
+    "split2": "^3.1.1",
+    "tap": "^14.10.7",
+    "standard": "^14.3.3"
+  }
+}
