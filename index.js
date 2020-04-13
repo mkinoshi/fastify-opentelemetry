@@ -1,6 +1,4 @@
-const api = require('@opentelemetry/api')
 const fp = require('fastify-plugin')
-const { VERSION } = require('./version')
 const attributesNames = {
   FASTIFY_TYPE: 'fastify.type'
 }
@@ -30,28 +28,21 @@ function initializeOpentelemetry (tracer) {
   }
 }
 
-function getTracer () {
-  const tracer = api.trace.getTracer('fastify', VERSION)
-  return tracer
-}
-
-function plugin (fastify, options = { enabled: true }, next) {
-  const { enabled, provider } = options
-  if (enabled && provider) {
-    api.trace.setGlobalTracerProvider(provider)
-  }
-
+function plugin (fastify, options = { enabled: true, tracer: null }, next) {
+  const { enabled, tracer } = options
   const commonAttribute = {
     [attributesNames.FASTIFY_TYPE]: 'fastify.hook'
   }
 
-  const tracer = enabled && provider ? getTracer() : null
+  if (!tracer) {
+    fastify.log.warn('Tracer is not initialized properly')
+  }
+
   fastify.decorateRequest('opentelemetry', initializeOpentelemetry(tracer))
 
   fastify.addHook('onRequest', (req, reply, done) => {
-    const { tracer } = req.opentelemetry
-    if (tracer) {
-      const rootSpan = tracer.startSpan(spanNames.ROOT, {}, api.Context.ROOT_CONTEXT)
+    if (enabled && tracer) {
+      const rootSpan = tracer.startSpan(spanNames.ROOT, { parent: tracer.getCurrentSpan() })
       const onRequestSpan = tracer.startSpan(spanNames.ON_REQUEST, {
         parent: rootSpan,
         ...commonAttribute
@@ -133,7 +124,14 @@ function plugin (fastify, options = { enabled: true }, next) {
   })
 
   fastify.addHook('onError', (req, reply, error, done) => {
-    const { tracer, rootSpan, parsingSpan, validationSpan, handlerSpan, serializationSpan } = req.opentelemetry
+    const {
+      tracer,
+      rootSpan,
+      parsingSpan,
+      validationSpan,
+      handlerSpan,
+      serializationSpan
+    } = req.opentelemetry
     if (parsingSpan) {
       parsingSpan.end()
       req.opentelemetry.parsingSpan = null
@@ -196,6 +194,7 @@ function plugin (fastify, options = { enabled: true }, next) {
     if (rootSpan) {
       req.log.info(`New trace<${rootSpan.context().traceId}> was created`)
       rootSpan.end()
+      req.opentelemetry.rootSpan = null
     }
     done()
   })

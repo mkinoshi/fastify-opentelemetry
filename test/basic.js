@@ -2,19 +2,37 @@ const t = require('tap')
 const split = require('split2')
 const request = require('request')
 const Fastify = require('fastify')
+const api = require('@opentelemetry/api')
 const { SimpleSpanProcessor } = require('@opentelemetry/tracing')
 const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin')
 const { NodeTracerProvider } = require('@opentelemetry/node')
 const fastifyOpentelemetry = require('../')
 
+const provider = new NodeTracerProvider({
+  logger: console,
+  logLevel: 'DEBUG'
+})
+provider.addSpanProcessor(
+  new SimpleSpanProcessor(
+    new ZipkinExporter({
+      serviceName: 'fastify',
+      url: 'http://host.docker.internal:9411/api/v2/spans'
+    })
+  )
+)
+provider.register()
+const tracer = api.trace.getTracer('fastify-test')
+
 t.test('When you use http for GET method', t => {
   const stream = split(JSON.parse)
   const provider = new NodeTracerProvider()
-  provider.addSpanProcessor(new SimpleSpanProcessor(
-    new ZipkinExporter({
-      serviceName: 'fastify'
-    })
-  ))
+  provider.addSpanProcessor(
+    new SimpleSpanProcessor(
+      new ZipkinExporter({
+        serviceName: 'fastify'
+      })
+    )
+  )
 
   const fastify = Fastify({
     logger: {
@@ -25,7 +43,7 @@ t.test('When you use http for GET method', t => {
 
   fastify.register(fastifyOpentelemetry, {
     enabled: true,
-    provider
+    tracer
   })
   fastify.get('/user', (req, reply) => {
     reply.send({ hello: 'world' })
@@ -58,11 +76,13 @@ t.test('When you use http for GET method', t => {
 t.test('When you use http for GET method', t => {
   const stream = split(JSON.parse)
   const provider = new NodeTracerProvider()
-  provider.addSpanProcessor(new SimpleSpanProcessor(
-    new ZipkinExporter({
-      serviceName: 'fastify'
-    })
-  ))
+  provider.addSpanProcessor(
+    new SimpleSpanProcessor(
+      new ZipkinExporter({
+        serviceName: 'fastify'
+      })
+    )
+  )
 
   const fastify = Fastify({
     logger: {
@@ -73,7 +93,7 @@ t.test('When you use http for GET method', t => {
 
   fastify.register(fastifyOpentelemetry, {
     enabled: true,
-    provider
+    tracer
   })
   fastify.post('/user', (req, reply) => {
     reply.send({ hello: 'world' })
