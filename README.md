@@ -4,10 +4,9 @@ OpenTelemetry API Connector for Fastify
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](http://standardjs.com/) [![Build Status](https://travis-ci.org/mkinoshi/fastify-opentelemetry.svg?branch=master)](https://travis-ci.org/mkinoshi/fastify-opentelemetry)
 
-
 `fastify-opentelemetry` is a plugin that connects your application with OpenTelemetry API for [Fastify](https://github.com/fastify/fastify). It is built on top of the [OpenTelemetry API for Javascript](https://github.com/open-telemetry/opentelemetry-js) package.
 
-If you want to connect to Stackdriver Trace API, please use [fastify-gcloud-trace](https://github.com/mkinoshi/fastify-gcloud-trace) instead.
+If you want to connect to Stackdriver Trace API without using OpenTelemetry, please use [fastify-gcloud-trace](https://github.com/mkinoshi/fastify-gcloud-trace) instead.
 
 This plugin automatically instruments OpenTelemetry Tracing, and generates trace results. You can configure exporters and OpenTelemetry API plugins as you want. Please check out the detail [here](https://github.com/open-telemetry/opentelemetry-js).
 
