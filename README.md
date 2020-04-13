@@ -12,7 +12,7 @@ This plugin automatically instruments OpenTelemetry Tracing, and generates trace
 
 Here is an example of a trace result using `Zipkin` Trace Exporter:
 
-![IMAGE](![Screen Shot 2020-04-12 at 5.10.25 PM.png](quiver-image-url/891AD7BC3AECA691D0FA52182A16D2B7.png =1680x1050))
+![Screen Shot 2020-04-12 at 5.10.25 PM.png](https://user-images.githubusercontent.com/10353744/79150441-2a3af380-7d9f-11ea-9ddb-da13f3b3c136.png)
 
 ## Install
 
