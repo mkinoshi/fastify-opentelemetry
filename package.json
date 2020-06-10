@@ -1,6 +1,6 @@
 {
   "name": "fastify-opentelemetry",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "OpenTelemetry fastify automatic instrumentation package.",
   "main": "index.js",
   "repository": "https://github.com/mkinoshi/fastify-opentelemetry",
@@ -24,7 +24,8 @@
     "node": ">=8.0.0"
   },
   "dependencies": {
-    "fastify-plugin": "^1.6.1"
+    "fastify-plugin": "^1.6.1",
+    "lodash.get": "^4.4.2"
   },
   "devDependencies": {
     "@opentelemetry/api": "^0.6.1",
