@@ -1,4 +1,5 @@
 const fp = require('fastify-plugin')
+const get = require('lodash.get')
 const attributesNames = {
   FASTIFY_TYPE: 'fastify.type'
 }
@@ -12,6 +13,21 @@ const spanNames = {
   SERIALIZATOIN: 'Serialization',
   ON_ERROR: 'OnError',
   ON_SEND: 'OnSend'
+}
+
+function buildRootOption (req, tracePluginOptions) {
+  const urlForHttp = get(req.raw, 'client.parser.incoming.originalUrl', null)
+  const urlForHttp2 = get(req.headers, ':path', null)
+  const url = urlForHttp || urlForHttp2
+  const methodForHttp = get(req.raw, 'client.parser.incoming.method', null)
+  const methodForHttp2 = get(req.headers, ':method', null)
+  const method = methodForHttp || methodForHttp2
+
+  return {
+    name: tracePluginOptions.nameOverride ? tracePluginOptions.nameOverride(req) : url,
+    url,
+    method
+  }
 }
 
 function initializeOpentelemetry (tracer) {
@@ -42,7 +58,10 @@ function plugin (fastify, options = { enabled: true, tracer: null }, next) {
 
   fastify.addHook('onRequest', (req, reply, done) => {
     if (enabled && tracer) {
-      const rootSpan = tracer.startSpan(spanNames.ROOT, { parent: tracer.getCurrentSpan() })
+      const rootSpanOption = buildRootOption(req, options || {})
+      const rootSpan = tracer.startSpan(rootSpanOption.name, { parent: tracer.getCurrentSpan() })
+      rootSpan.setAttribute('method', rootSpanOption.method)
+      rootSpan.setAttribute('url', rootSpanOption.url)
       const onRequestSpan = tracer.startSpan(spanNames.ON_REQUEST, {
         parent: rootSpan,
         ...commonAttribute
