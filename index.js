@@ -44,8 +44,27 @@ function initializeOpentelemetry (tracer) {
   }
 }
 
+function ignoreFromCondition (ignoreConditions, target) {
+  return (
+    !target ||
+    ignoreConditions.some(condition => {
+      if (typeof condition === 'string') {
+        return condition === target
+      }
+
+      if (typeof condition === 'object') {
+        return target.match(condition)
+      }
+
+      if (typeof condition === 'function') {
+        return condition(target)
+      }
+    })
+  )
+}
+
 function plugin (fastify, options = { enabled: true, tracer: null }, next) {
-  const { enabled, tracer } = options
+  const { enabled, tracer, ignoreUrls = [], ignoreMethods = [] } = options
   const commonAttribute = {
     [attributesNames.FASTIFY_TYPE]: 'fastify.hook'
   }
@@ -59,15 +78,20 @@ function plugin (fastify, options = { enabled: true, tracer: null }, next) {
   fastify.addHook('onRequest', (req, reply, done) => {
     if (enabled && tracer) {
       const rootSpanOption = buildRootOption(req, options || {})
-      const rootSpan = tracer.startSpan(rootSpanOption.name, { parent: tracer.getCurrentSpan() })
-      rootSpan.setAttribute('method', rootSpanOption.method)
-      rootSpan.setAttribute('url', rootSpanOption.url)
-      const onRequestSpan = tracer.startSpan(spanNames.ON_REQUEST, {
-        parent: rootSpan,
-        ...commonAttribute
-      })
-      req.opentelemetry.rootSpan = rootSpan
-      req.opentelemetry.onRequestSpan = onRequestSpan
+      const shouldCreateSpan =
+        !ignoreFromCondition(ignoreUrls, rootSpanOption.url) &&
+        !ignoreFromCondition(ignoreMethods, rootSpanOption.method)
+      if (shouldCreateSpan) {
+        const rootSpan = tracer.startSpan(rootSpanOption.name, { parent: tracer.getCurrentSpan() })
+        rootSpan.setAttribute('method', rootSpanOption.method)
+        rootSpan.setAttribute('url', rootSpanOption.url)
+        const onRequestSpan = tracer.startSpan(spanNames.ON_REQUEST, {
+          parent: rootSpan,
+          ...commonAttribute
+        })
+        req.opentelemetry.rootSpan = rootSpan
+        req.opentelemetry.onRequestSpan = onRequestSpan
+      }
       done()
     } else {
       done()

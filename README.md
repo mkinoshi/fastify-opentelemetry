@@ -71,6 +71,8 @@ This is the list of available options.
 
 - `enabled` - If it is `true`, it generates a trace. The default value is `true`.
 - `tracer` - OpenTelemetry API `tracer` object. This is a required property in order to use this plugin.
+- `ignoreUrls` - You can pass an array of conditions to avoid creating a tracer for a certain URL. The conditions can be either string, regex, or function.
+- `ignoreMethods` - Similar to ignoreUrls, you can pass an array of conditions to avoid creating a tracer for a certain request method.
 
 ## Limitations
 
