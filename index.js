@@ -235,7 +235,7 @@ function plugin (fastify, options = { enabled: true, tracer: null }, next) {
     }
 
     if (rootSpan) {
-      req.log.info(`New trace<${rootSpan.context().traceId}> was created`)
+      req.log.debug({traceId: rootSpan.context().traceId}, "New trace created")
       rootSpan.end()
       req.opentelemetry.rootSpan = null
     }
